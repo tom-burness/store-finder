@@ -24,13 +24,27 @@ final class ReadFileChunks
             ->chunkBy(self::CHUNK_SIZE);
 
         foreach ($chunks as $chunk) {
-            yield collect($chunk)->map(
-                fn ($data) => new PostcodeData(
+            yield collect($chunk)->map(function ($data) {
+                /**
+                 * NOTE: I am validating the lat long here but I would put this within a value object which ensures
+                 * it can only be created if it has valid data
+                 */
+                $lat = (float) $data['lat'];
+                $long = (float) $data['long'];
+
+                if (
+                    abs($lat) > 90 ||
+                    abs($long) > 180
+                ) {
+                    return null;
+                }
+
+                return new PostcodeData(
                     $data['pcd'],
-                    (float) $data['lat'],
-                    (float) $data['long']
-                )
-            );
+                    $lat,
+                    $long
+                );
+            })->filter();
         }
     }
 }

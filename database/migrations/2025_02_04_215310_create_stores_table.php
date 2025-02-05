@@ -10,16 +10,19 @@ return new class () extends Migration {
      */
     public function up(): void
     {
-        Schema::create('postcodes', function (Blueprint $table) {
+        Schema::create('stores', function (Blueprint $table) {
             $table->id();
-            $table->string('postcode');
+            $table->string('name');
+            $table->enum('status', ['open', 'closed']);
+            $table->enum('type', ['takeaway', 'shop', 'restaurant']);
             $table->geography('coordinates', 'point');
             // NOTE: I tried to use the spatial data but I had a lot of issues, I ended up storing both for now
             $table->decimal('long', 11, 8);
             $table->decimal('lat', 10, 8);
+            $table->integer('max_delivery_distance');
             $table->timestamps();
 
-            $table->index('postcode');
+            $table->spatialIndex('coordinates');
         });
     }
 
@@ -28,6 +31,6 @@ return new class () extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('postcodes');
+        Schema::dropIfExists('stores');
     }
 };

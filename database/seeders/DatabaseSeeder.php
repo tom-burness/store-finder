@@ -16,8 +16,21 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->create();
 
         User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+            'name' => 'Owner',
+            'email' => 'store@example.com',
+        ])->tokens()->create([
+            'name' => 'owner',
+            'token' => hash('sha256', '2d4b13702d1a6f35d4fed1b68641230d'),
+            'abilities' => ['createStore'],
+        ]);
+
+
+        User::factory()->create([
+            'name' => 'Customer',
+            'email' => 'customer@example.com',
+        ])->tokens()->create([
+            'name' => 'customer',
+            'token' => hash('sha256', 'f5f132a18d409e4b8284307c4c481487'),
         ]);
     }
 }

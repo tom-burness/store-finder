@@ -8,6 +8,8 @@ class Postcode extends Model
 {
     protected $fillable = [
         'postcode',
-        'coordinates'
+        'coordinates',
+        'lat',
+        'long'
     ];
 }
