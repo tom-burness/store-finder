@@ -1,66 +1,57 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+## Setup
+This project has been built with laravel sail.
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+I have used pint for styling
+I have used PHPStan for static analysis. There are a few outstanding issues but its set to level 9
 
-## About Laravel
+## Commands
+`sail artisan app:import-postcode` - Optional `--skip-download`.
+This command will download a hardcoded zip file and create a job to extract. This job created more jobs within the batch to process each CSV file and inserts the data into the DB.
+Using jobs allows for retry mechanisms and async processing
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+`sail artisan horizon`
+Run the jobs to download and process the files
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## API Authentication & Auth
+I have used sanctum for this and created 2 users within a seeder
+`sail artisan db:seed`
+A user which is allowed to create stores can be used with the bearer token: 2d4b13702d1a6f35d4fed1b68641230d
+A user that cannot create stores but can call GET endpoints can be used with bearer token: f5f132a18d409e4b8284307c4c481487
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## API
+POST /stores - Create a new store
+GET /stores?postcode= - Get stores in order of distance
+GET /stores/deliverable?postcode?= - Get stores that can deliver based on the distance
 
-## Learning Laravel
+I opted to pass the postcode in as a parameter as this would allow the next logical progression of allowing lat,long if the FE used a map.
+Having /deliverable makes the URL simple to understand but this too could have been a filter parameter.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+I have added a postman collection. I have been unable to test this as I cannot sign in to postman on the desltop app (need to reinstall I assume)
+Use as a guide.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## DB and issues
+I had a lot of issues working with the Spatial data, this is the first time I have used it and it seemed to make the most sense. I included lat and long as well as coord because of these issues
+but in the end I managed to get it working with coords
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+With more time I would clean this up but having the lat long does provide some value for outputting easier.
 
-## Laravel Sponsors
+## Tests
+I ran out of time to do any tests due to the issues I had with the Spatial fields within the DB but this is what I would do:
+ - Feature test each HTTP endpoint
+ - Feature test the command
+ - Feature test each job
+ - Unit testing will require a lot of mocking given most of the logic is interacting with files and database which would be solved with repositories
+ - With repositories I would be able to unit test more of the code as these calls can be mocked
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## Repositories
+All DB queries should be within a repository. Repositories can be unique to the context. This means we may have several queries doing something similar but get data for a different purpose.
+Keeping these separate prevents queries getting large as each new feature needs "just a little more" data.
 
-### Premium Partners
+## What else to do
+- Repositories is a massive missing compontent to this solution. They are simple to create, allows for an interface to be used for swapping data sources. Also allows for testing easier.
+- Tests clearly are missing. This is not acceptable for a production application. Tests give confidence you can deploy with little issue (we always hope for no issues! When a issue occurs a test can replicate it and the fix can then be proven)
+- API GET: Allow the user to provide lat,long as if they have selected a point on a map
+- API POST: Allow the store creator to save a Postcode. Use the postcode table to get the coords. This seems like an easy win.
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
-
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Thank you
+Thank you for your time. I look forward to hearing your feedback. In the meantime, I will be actioning my own points because I am not happy to draw a final line on this...yet.
