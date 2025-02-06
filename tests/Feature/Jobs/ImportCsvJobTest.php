@@ -7,6 +7,7 @@ namespace Tests\Feature\Jobs;
 use App\DataImport\ReadFileChunks;
 use App\Jobs\ImportCsvJob;
 use App\Models\Postcode;
+use App\Repositories\PostcodeRepository;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -14,9 +15,6 @@ class ImportCsvJobTest extends TestCase
 {
     use RefreshDatabase;
 
-    /**
-     * A basic test example.
-     */
     public function test_the_job_imports_all_valid_data_from_csv(): void
     {
         // Set to prove the job truncates data first
@@ -29,7 +27,10 @@ class ImportCsvJobTest extends TestCase
         $reader = new ReadFileChunks();
 
         $sut = new ImportCsvJob($filePath);
-        $sut->handle($reader);
+        $sut->handle(
+            app(PostcodeRepository::class),
+            $reader
+        );
 
         $this->assertDatabaseCount('postcodes', 13);
     }
