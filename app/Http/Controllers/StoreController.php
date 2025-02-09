@@ -8,11 +8,17 @@ use App\Http\Resources\StoreCollection;
 use App\Http\Resources\StoreResource;
 use App\Models\Postcode;
 use App\Models\Store;
+use App\Repositories\StoreRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
 class StoreController extends Controller
 {
+    public function __construct(
+        protected StoreRepository $storeRepository
+    ) {
+
+    }
     /**
      * Display a listing of the resource.
      *
@@ -64,17 +70,7 @@ class StoreController extends Controller
          * NOTE: Improvement. Allow postcode to be POSTed and use the postcode table to get the coordinates
          */
 
-        $lat = (float) $request->latitude;
-        $long = (float) $request->longitude;
-        $store = Store::create([
-            'name' => $request->name,
-            'status' => $request->status,
-            'type' => $request->type,
-            'long' => $long,
-            'lat' => $lat,
-            'coordinates' => DB::raw("ST_GeomFromText('POINT($lat $long)', 4326)"),
-            'max_delivery_distance' => $request->max_delivery_distance
-        ]);
+        $store = $this->storeRepository->createFromStoreRequest($request);
 
         return (new StoreResource($store))
             ->response()
