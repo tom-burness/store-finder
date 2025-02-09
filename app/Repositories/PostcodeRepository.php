@@ -18,6 +18,14 @@ class PostcodeRepository
 
     }
 
+    public function findByPostcode(string $postcode): ?Postcode
+    {
+        return $this->postcode
+            ->newQuery()
+            ->where('postcode', $postcode)
+            ->first();
+    }
+
     /**
      * @param iterable<Collection<int,PostcodeData>> $chunkedPostcodeData
      */

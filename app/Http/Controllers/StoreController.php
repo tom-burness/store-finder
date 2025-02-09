@@ -2,19 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\DataTransferObjects\PostcodeData;
 use App\Http\Requests\StoreCreateRequest;
 use App\Http\Requests\StoreIndexRequest;
 use App\Http\Resources\StoreCollection;
 use App\Http\Resources\StoreResource;
-use App\Models\Postcode;
-use App\Models\Store;
+use App\Repositories\PostcodeRepository;
 use App\Repositories\StoreRepository;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\DB;
 
 class StoreController extends Controller
 {
     public function __construct(
+        protected PostcodeRepository $postcodeRepository,
         protected StoreRepository $storeRepository
     ) {
 
@@ -28,24 +28,19 @@ class StoreController extends Controller
     {
         $postcodeInput = $request->query('postcode');
 
-        $postcodeRecord = Postcode::where('postcode', $postcodeInput)->first();
+        $postcodeRecord = $this->postcodeRepository->findByPostcode($postcodeInput);
 
         if (! $postcodeRecord) {
             return response()->json(['error' => 'We cannot locate that postcode'], 404);
         }
 
-        $lat = $postcodeRecord->lat;
-        $long = $postcodeRecord->long;
+        $postcodeData = new PostcodeData(
+            $postcodeRecord->postcode,
+            $postcodeRecord->lat,
+            $postcodeRecord->long
+        );
 
-        $stores = Store::select(
-            'name',
-            'status',
-            'type',
-            'max_delivery_distance',
-            DB::raw("ST_Distance_Sphere(coordinates, ST_GeomFromText('POINT($lat $long)', 4326)) / 1000 AS distance")
-        )
-            ->orderBy('distance')
-            ->paginate(10);
+        $stores = $this->storeRepository->getPaginatedByPostcode($postcodeData);
 
         return new StoreCollection($stores);
     }
