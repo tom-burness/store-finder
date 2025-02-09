@@ -16,4 +16,17 @@ class Postcode extends Model
         'lat',
         'long'
     ];
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'lat' => 'float',
+            'long' => 'float',
+        ];
+    }
 }
