@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
-class StoreControllerTest extends TestCase
+class StoreIndexControllerTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -26,9 +26,21 @@ class StoreControllerTest extends TestCase
             ]);
     }
 
+    public function test_index_returns_validation_error()
+    {
+        Sanctum::actingAs(User::factory()->create(), ['search']);
+
+        $response = $this->json('GET', '/api/stores');
+
+        $response->assertStatus(422)
+            ->assertJson([
+                'message' => 'Postcode parameter is required',
+            ]);
+    }
+
     public function test_index_returns_store_with_correct_distance_and_order()
     {
-        Sanctum::actingAs(User::factory()->create());
+        Sanctum::actingAs(User::factory()->create(), ['search']);
 
         Postcode::factory()->create([
             'postcode' => 'SE9 9AF',
@@ -75,7 +87,6 @@ class StoreControllerTest extends TestCase
 
         $response = $this->json('GET', '/api/stores?postcode=SE9 9AF');
 
-        // Assert a successful response and check the structure of the JSON payload.
         $response->assertStatus(200)->assertJson([
             'data' => [
                 [

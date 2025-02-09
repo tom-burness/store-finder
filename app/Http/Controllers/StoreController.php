@@ -56,7 +56,7 @@ class StoreController extends Controller
 
         if (! $request->user()?->tokenCan("createStore")) {
             return response()->json([
-                'error' => 'You cannot create a store',
+                'message' => 'You cannot create a store.',
             ], 403);
         }
 
