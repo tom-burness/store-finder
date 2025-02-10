@@ -29,7 +29,7 @@ final class GetStoresFromRequest
         $postcodeRecord = $this->postcodeRepository->findByPostcode($postcodeInput);
 
         if (! $postcodeRecord) {
-            return response()->json(['error' => 'We cannot locate that postcode'], 404);
+            return new JsonResponse(['error' => 'We cannot locate that postcode'], 404);
         }
 
         $postcodeData = new PostcodeData(
