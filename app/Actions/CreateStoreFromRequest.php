@@ -19,7 +19,7 @@ final class CreateStoreFromRequest
 
     }
 
-    public function handle(StoreCreateRequest $request): JsonResponse
+    public function handle(StoreCreateRequest $request): JsonResponse|StoreResource
     {
         /**
          * NOTE: Policies are better but given this is the only
@@ -27,7 +27,7 @@ final class CreateStoreFromRequest
          */
 
         if (! $request->user()?->tokenCan("createStore")) {
-            return response()->json([
+            return new JsonResponse([
                 'message' => 'You cannot create a store.',
             ], 403);
         }
@@ -38,8 +38,6 @@ final class CreateStoreFromRequest
 
         $store = $this->storeRepository->createFromStoreRequest($request);
 
-        return (new StoreResource($store))
-            ->response()
-            ->setStatusCode(201);
+        return new StoreResource($store);
     }
 }

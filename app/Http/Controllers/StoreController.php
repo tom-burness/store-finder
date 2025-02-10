@@ -31,7 +31,7 @@ class StoreController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreCreateRequest $request): JsonResponse
+    public function store(StoreCreateRequest $request): StoreResource|JsonResponse
     {
         return $this->createStoreFromRequestAction->handle($request);
 
